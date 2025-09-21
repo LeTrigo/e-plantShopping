@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { removeItem, updateQuantity } from './CartSlice';
+import { removeItem, updateQuantity, addItem } from './CartSlice';
 import './CartItem.css';
 
 const CartItem = ({ onContinueShopping }) => {
@@ -9,28 +9,63 @@ const CartItem = ({ onContinueShopping }) => {
 
   // Calculate total amount for all products in the cart
   const calculateTotalAmount = () => {
- 
+    let total = 0;
+    cart.forEach((item) => {
+      const unitCost = typeof item.cost === 'string'
+        ? parseFloat(item.cost.replace(/[^0-9.-]+/g, ''))
+        : Number(item.cost);
+      total += unitCost * (item.quantity ?? 1);
+    });
+    return total;
   };
 
   const handleContinueShopping = (e) => {
-   
+    onContinueShopping && onContinueShopping(e);
   };
 
 
 
   const handleIncrement = (item) => {
-  };
+    const newQuantity = item.quantity + 1;
+  dispatch(updateQuantity({ name: item.name, quantity: newQuantity }));
+};
+  
 
   const handleDecrement = (item) => {
-   
+    if (item.quantity > 1) {
+        const newQuantity = item.quantity - 1;
+        dispatch(updateQuantity({ name: item.name, quantity: newQuantity }));
+      } else {
+        // Si al decrementar llegaría a 0, removemos el item del carrito
+        dispatch(removeItem({ name: item.name }));
+      }
   };
 
   const handleRemove = (item) => {
+    dispatch(removeItem({ name: item.name }));
+  };
+
+  const handleAddIfNeeded = (newItem) => {
+    // Verifica si ya existe en cart (por ejemplo, por id)
+    const exists = cart.find((i) => i.id === newItem.id);
+    if (!exists) {
+      dispatch(addItem({ name: newItem.name, quantity: 1, cost: newItem.cost, id: newItem.id }));
+    }
   };
 
   // Calculate total cost based on quantity for an item
   const calculateTotalCost = (item) => {
+    const unitPrice = typeof item.cost === 'string'
+      ? parseFloat(item.cost.replace(/[^0-9.-]+/g, ''))
+      : Number(item.cost);
+    return unitPrice * (item.quantity ?? 1);
   };
+
+
+
+  const handleCheckoutShopping = (e) => {
+  alert('Functionality to be added for future reference');
+};
 
   return (
     <div className="cart-container">
